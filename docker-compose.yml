@@ -1,0 +1,31 @@
+services:
+  # Service 1: Aplikasi Go
+  app:
+    build: .
+    container_name: go_app_container
+    ports:
+      - "8080:8080" # Mapping port: Host:Container
+    environment:
+      - DB_HOST=db        # PENTING: Ini nama service database di bawah
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=hmdtif_todo
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+  # Service 2: Database PostgreSQL
+  db:
+    image: postgres:18.1-alpine
+    container_name: go_postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hmdtif_todo
+    ports:
+      - "5432:5432" # Opsional: buka jika ingin akses DB dari DBeaver/pgAdmin di laptop
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Agar data tidak hilang saat container mati
+
+volumes:
+  postgres_data:

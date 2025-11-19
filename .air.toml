@@ -1,0 +1,33 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# PENTING: Perintah build mengarah ke folder cmd/server
+cmd = "go build -o ./tmp/main ./cmd/server"
+# Lokasi binary hasil build (tetap di tmp)
+bin = "./tmp/main"
+# Nama file output log (opsional)
+log = "air_errors.log"
+# Delay agar tidak terlalu sering build saat mengetik cepat
+delay = 1000
+# Folder yang diabaikan
+exclude_dir = ["assets", "tmp", "vendor"]
+# Ekstensi file yang dipantau
+include_ext = ["go", "tpl", "tmpl", "html"]
+# File tertentu yang diabaikan
+exclude_file = []
+
+[log]
+# Tampilkan log waktu
+time = true
+
+[color]
+# Warna log
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Hapus folder tmp saat exit
+clean_on_exit = true
