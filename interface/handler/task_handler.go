@@ -5,6 +5,9 @@ import (
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/usecase"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
+	"github.com/Candrandika/be-todo-app-hmdtif/domain/dto"
+	"github.com/gofiber/fiber/v2"
 )
 
 type TaskHandler interface {
@@ -88,4 +91,59 @@ func (h *taskHandler) Create(ctx *fiber.Ctx) error {
 			"task":    newTask,
 		},
 	})
+}
+
+func (h *TaskHandler) Show(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	}
+
+	task, err := h.TaskUsecase.GetByID(c.Context(), uint(id))
+	if err != nil {
+		// jika usecase mengembalikan ErrNotFound -> 404, else 500
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.ToTaskResponse(task))
+}
+
+func (h *TaskHandler) Update(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	}
+
+	var req dto.TaskUpdateRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	// validasi menggunakan validator yang sudah di-inject kalau perlu
+	if err := h.Validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	updated, err := h.TaskUsecase.Update(c.Context(), uint(id), req)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "unable to update"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.ToTaskResponse(updated))
+}
+
+func (h *TaskHandler) Delete(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
+	}
+
+	if err := h.TaskUsecase.Delete(c.Context(), uint(id)); err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent) // 204
 }
