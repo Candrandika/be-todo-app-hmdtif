@@ -23,22 +23,21 @@ func App() *Application {
 	app := &Application{}
 	app.Env = config.NewEnv()
 	app.DB = db.NewPostgresDatabase(app.Env)
-	db.Migrate(app.DB) // Run migrations
+	db.Migrate(app.DB)
 
 	app.FiberApp = fiber.New()
 
-	// Dependency Injection
 	taskRepo := repository.NewTaskRepository(app.DB)
 	taskUsecase := usecase.NewTaskUsecase(taskRepo)
 	taskHandler := handler.NewTaskHandler(taskUsecase, validator.New())
 
-	// Routing
 	tasks := app.FiberApp.Group("/api/v1/tasks")
 	tasks.Get("/", taskHandler.Index)
 	tasks.Post("/", taskHandler.Create)
-	tasks.Get("/:id", taskHandler.Show)
-	tasks.Put("/:id", taskHandler.Update)
-	tasks.Delete("/:id", taskHandler.Delete)
+
+	tasks.Get("/:id", taskHandler.Show)      // GET /api/v1/tasks/:id
+	tasks.Put("/:id", taskHandler.Update)    // PUT /api/v1/tasks/:id
+	tasks.Delete("/:id", taskHandler.Delete) // DELETE /api/v1/tasks/:id
 
 	return app
 }
