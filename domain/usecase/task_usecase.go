@@ -4,6 +4,7 @@ import (
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/dto"
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/entity"
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/repository"
+	"context"
 )
 
 type TaskUsecase interface {
@@ -56,4 +57,11 @@ func (u *taskUsecase) CreateNewTask(req dto.CreateTaskRequest) (*dto.TaskRespons
 		IsDone:      newTask.IsDone,
 		CreatedAt:   newTask.CreatedAt,
 	}, nil
+}
+type TaskUsecase interface {
+	GetAll(ctx context.Context) ([]entity.Task, error)
+	Create(ctx context.Context, req dto.TaskCreateRequest) (entity.Task, error)
+	GetByID(ctx context.Context, id uint) (entity.Task, error)
+	Update(ctx context.Context, id uint, req dto.TaskUpdateRequest) (entity.Task, error)
+	Delete(ctx context.Context, id uint) error
 }
