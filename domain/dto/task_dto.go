@@ -14,3 +14,8 @@ type CreateTaskRequest struct {
 	Title       string `json:"title" validate:"required"`
 	Description string `json:"description"`
 }
+type TaskUpdateRequest struct {
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description"`
+	Done        bool   `json:"done"`
+}
