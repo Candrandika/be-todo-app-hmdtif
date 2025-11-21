@@ -34,9 +34,9 @@ func (r *taskRepository) CreateNew(task *entity.Task) error {
 	return r.db.Create(task).Error
 }
 type TaskRepository interface {
-	Create(ctx context.Context, t entity.Task) (entity.Task, error)
-	GetAll(ctx context.Context) ([]entity.Task, error)
-	GetByID(ctx context.Context, id uint) (entity.Task, error)
-	Update(ctx context.Context, t entity.Task) (entity.Task, error)
-	Delete(ctx context.Context, id uint) error
+	Create(t entity.Task) (entity.Task, error)
+	GetAll() ([]entity.Task, error)
+	GetByID(id uint) (entity.Task, error)
+	Update(t entity.Task) (entity.Task, error)
+	Delete(id uint) error
 }
