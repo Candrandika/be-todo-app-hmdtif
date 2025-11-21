@@ -1,18 +1,17 @@
 # Penugasan Akhir Stacil PIT Backend HMDTIF
 
 ## Deskripsi Tugas
-```
+
 Membuat Rest API untuk mengelola to-do list. Sistem hanya memerlukan 1 tabel, yaitu tabel tasks. Sistem tidak memerlukan autentikasi, jadi hanya terdapat endpoint untuk CRUD task saja.
-```
 
 ## Endpoint
-| Endpoint                 | Kegunaan         |
-|--------------------------|------------------|
-| POST /api/v1/tasks       | Candra           |
-| GET /api/v1/tasks        | Candra           |
-| GET /api/v1/tasks/:id    | Arin             |
-| PUT /api/v1/tasks/:id    | Arin             |
-| DELETE /api/v1/tasks/:id | Arin             |
+| Endpoint                 | Kegunaan              |
+|--------------------------|-----------------------|
+| POST /api/v1/tasks       | Buat task baru        |
+| GET /api/v1/tasks        | Tampilkan semua task  |
+| GET /api/v1/tasks/:id    | Tampilkan single task |
+| PUT /api/v1/tasks/:id    | Ubah task             |
+| DELETE /api/v1/tasks/:id | Hapus task            |
 
 ## Pembagian Tugas
 | Tugas / Endpoint  | Yang Mengerjakan |
