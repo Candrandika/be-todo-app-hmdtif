@@ -218,6 +218,17 @@ func (h *taskHandler) Delete(ctx *fiber.Ctx) error {
 
 	err = h.usecase.DeleteTask(uint(id))
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"payload": fiber.Map{
+					"error": fiber.Map{
+						"code":    fiber.StatusNotFound,
+						"message": "Task not found",
+						"error":   err.Error(),
+					},
+				},
+			})
+		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"payload": fiber.Map{
 				"error": fiber.Map{

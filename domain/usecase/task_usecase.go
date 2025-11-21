@@ -107,5 +107,10 @@ func (u *taskUsecase) UpdateTask(id uint, req dto.UpdateTaskRequest) (*dto.TaskR
 }
 
 func (u *taskUsecase) DeleteTask(id uint) error {
+	// Verify task exists first
+	_, err := u.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
 	return u.repo.Delete(id)
 }
