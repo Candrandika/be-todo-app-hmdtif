@@ -1,67 +1,71 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/dto"
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/entity"
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/repository"
-	"context"
 )
 
+var ErrTaskNotFound = errors.New("task not found")
+
 type TaskUsecase interface {
-	GetAllTask() ([]dto.TaskResponse, error)
-	CreateNewTask(req dto.CreateTaskRequest) (*dto.TaskResponse, error)
+	GetAllTask() ([]entity.Task, error)
+	CreateNewTask(req dto.CreateTaskRequest) (entity.Task, error)
+	GetByID(id uint) (entity.Task, error)
+	Update(id uint, req dto.TaskUpdateRequest) (entity.Task, error)
+	Delete(id uint) error
 }
 
 type taskUsecase struct {
 	repo repository.TaskRepository
 }
 
-func NewTaskUsecase(repo repository.TaskRepository) TaskUsecase {
-	return &taskUsecase{repo}
+func NewTaskUsecase(r repository.TaskRepository) TaskUsecase {
+	return &taskUsecase{repo: r}
 }
 
-func (u *taskUsecase) GetAllTask() ([]dto.TaskResponse, error) {
-	tasks, err := u.repo.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	response := make([]dto.TaskResponse, 0)
-
-	for _, t := range tasks {
-		response = append(response, dto.TaskResponse{
-			ID:          t.ID,
-			Title:       t.Title,
-			Description: t.Description,
-			IsDone:      t.IsDone,
-			CreatedAt:   t.CreatedAt,
-		})
-	}
-	return (response), nil
+func (u *taskUsecase) GetAllTask() ([]entity.Task, error) {
+	return u.repo.GetAll()
 }
 
-func (u *taskUsecase) CreateNewTask(req dto.CreateTaskRequest) (*dto.TaskResponse, error) {
-	newTask := entity.Task{
+func (u *taskUsecase) CreateNewTask(req dto.CreateTaskRequest) (entity.Task, error) {
+	t := entity.Task{
 		Title:       req.Title,
 		Description: req.Description,
+		Done:        false,
 	}
-
-	if err := u.repo.CreateNew(&newTask); err != nil {
-		return nil, err
-	}
-
-	return &dto.TaskResponse{
-		ID:          newTask.ID,
-		Title:       newTask.Title,
-		Description: newTask.Description,
-		IsDone:      newTask.IsDone,
-		CreatedAt:   newTask.CreatedAt,
-	}, nil
+	return u.repo.Create(t)
 }
-type TaskUsecase interface {
-	GetAll(ctx context.Context) ([]entity.Task, error)
-	Create(ctx context.Context, req dto.TaskCreateRequest) (entity.Task, error)
-	GetByID(ctx context.Context, id uint) (entity.Task, error)
-	Update(ctx context.Context, id uint, req dto.TaskUpdateRequest) (entity.Task, error)
-	Delete(ctx context.Context, id uint) error
+
+func (u *taskUsecase) GetByID(id uint) (entity.Task, error) {
+	t, err := u.repo.GetByID(id)
+	if err != nil {
+		return entity.Task{}, ErrTaskNotFound
+	}
+	return t, nil
+}
+
+func (u *taskUsecase) Update(id uint, req dto.TaskUpdateRequest) (entity.Task, error) {
+	t, err := u.repo.GetByID(id)
+	if err != nil {
+		return entity.Task{}, ErrTaskNotFound
+	}
+	t.Title = req.Title
+	t.Description = req.Description
+	t.Done = req.Done
+	updated, err := u.repo.Update(t)
+	if err != nil {
+		return entity.Task{}, err
+	}
+	return updated, nil
+}
+
+func (u *taskUsecase) Delete(id uint) error {
+	_, err := u.repo.GetByID(id)
+	if err != nil {
+		return ErrTaskNotFound
+	}
+	return u.repo.Delete(id)
 }
