@@ -8,6 +8,9 @@ import (
 type TaskRepository interface {
 	GetAll() ([]entity.Task, error)
 	CreateNew(task *entity.Task) error
+	GetByID(id uint) (*entity.Task, error)
+	Update(task *entity.Task) error
+	Delete(id uint) error
 }
 
 type taskRepository struct {
@@ -31,4 +34,25 @@ func (r *taskRepository) GetAll() ([]entity.Task, error) {
 
 func (r *taskRepository) CreateNew(task *entity.Task) error {
 	return r.db.Create(task).Error
+}
+
+func (r *taskRepository) GetByID(id uint) (*entity.Task, error) {
+	var task entity.Task
+	err := r.db.First(&task, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+func (r *taskRepository) Update(task *entity.Task) error {
+	return r.db.Save(task).Error
+}
+
+func (r *taskRepository) Delete(id uint) error {
+	result := r.db.Delete(&entity.Task{}, id)
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return result.Error
 }
