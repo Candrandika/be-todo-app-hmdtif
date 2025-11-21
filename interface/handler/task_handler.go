@@ -102,7 +102,6 @@ func (h *TaskHandler) Show(c *fiber.Ctx) error {
 
 	task, err := h.TaskUsecase.GetByID(c.Context(), uint(id))
 	if err != nil {
-		// jika usecase mengembalikan ErrNotFound -> 404, else 500
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
 	}
 
@@ -121,7 +120,6 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
 	}
 
-	// validasi menggunakan validator yang sudah di-inject kalau perlu
 	if err := h.Validate.Struct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -145,5 +143,5 @@ func (h *TaskHandler) Delete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
 	}
 
-	return c.SendStatus(fiber.StatusNoContent) // 204
+	return c.SendStatus(fiber.StatusNoContent)
 }
