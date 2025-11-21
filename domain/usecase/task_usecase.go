@@ -9,6 +9,9 @@ import (
 type TaskUsecase interface {
 	GetAllTask() ([]dto.TaskResponse, error)
 	CreateNewTask(req dto.CreateTaskRequest) (*dto.TaskResponse, error)
+	GetTaskByID(id uint) (*dto.TaskResponse, error)
+	UpdateTask(id uint, req dto.UpdateTaskRequest) (*dto.TaskResponse, error)
+	DeleteTask(id uint) error
 }
 
 type taskUsecase struct {
@@ -56,4 +59,52 @@ func (u *taskUsecase) CreateNewTask(req dto.CreateTaskRequest) (*dto.TaskRespons
 		IsDone:      newTask.IsDone,
 		CreatedAt:   newTask.CreatedAt,
 	}, nil
+}
+
+func (u *taskUsecase) GetTaskByID(id uint) (*dto.TaskResponse, error) {
+	task, err := u.repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.TaskResponse{
+		ID:          task.ID,
+		Title:       task.Title,
+		Description: task.Description,
+		IsDone:      task.IsDone,
+		CreatedAt:   task.CreatedAt,
+	}, nil
+}
+
+func (u *taskUsecase) UpdateTask(id uint, req dto.UpdateTaskRequest) (*dto.TaskResponse, error) {
+	task, err := u.repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Title != "" {
+		task.Title = req.Title
+	}
+	if req.Description != "" {
+		task.Description = req.Description
+	}
+	if req.IsDone != nil {
+		task.IsDone = *req.IsDone
+	}
+
+	if err := u.repo.Update(task); err != nil {
+		return nil, err
+	}
+
+	return &dto.TaskResponse{
+		ID:          task.ID,
+		Title:       task.Title,
+		Description: task.Description,
+		IsDone:      task.IsDone,
+		CreatedAt:   task.CreatedAt,
+	}, nil
+}
+
+func (u *taskUsecase) DeleteTask(id uint) error {
+	return u.repo.Delete(id)
 }

@@ -37,6 +37,11 @@ func App() *Application {
 	tasks.Get("/", taskHandler.Index)
 	tasks.Post("/", taskHandler.Create)
 
+	// Added routes for single task detail, update, delete
+	tasks.Get("/:id", taskHandler.Show)
+	tasks.Put("/:id", taskHandler.Update)
+	tasks.Delete("/:id", taskHandler.Delete)
+
 	return app
 }
 
