@@ -36,6 +36,9 @@ func App() *Application {
 	tasks := app.FiberApp.Group("/api/v1/tasks")
 	tasks.Get("/", taskHandler.Index)
 	tasks.Post("/", taskHandler.Create)
+	tasks.Get("/:id", taskHandler.Show)
+	tasks.Put("/:id", taskHandler.Update)
+	tasks.Delete("/:id", taskHandler.Delete)
 
 	return app
 }
