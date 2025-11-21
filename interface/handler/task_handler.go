@@ -1,18 +1,20 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/dto"
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/usecase"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
-	"strconv"
-	"github.com/Candrandika/be-todo-app-hmdtif/domain/dto"
 	"github.com/gofiber/fiber/v2"
 )
 
 type TaskHandler interface {
 	Index(ctx *fiber.Ctx) error
 	Create(ctx *fiber.Ctx) error
+	Show(ctx *fiber.Ctx) error
+	Update(ctx *fiber.Ctx) error
+	Delete(ctx *fiber.Ctx) error
 }
 
 type taskHandler struct {
@@ -20,8 +22,8 @@ type taskHandler struct {
 	validator *validator.Validate
 }
 
-func NewTaskHandler(usecase usecase.TaskUsecase, validator *validator.Validate) TaskHandler {
-	return &taskHandler{usecase, validator}
+func NewTaskHandler(u usecase.TaskUsecase, v *validator.Validate) TaskHandler {
+	return &taskHandler{usecase: u, validator: v}
 }
 
 func (h *taskHandler) Index(ctx *fiber.Ctx) error {
@@ -93,22 +95,27 @@ func (h *taskHandler) Create(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *TaskHandler) Show(c *fiber.Ctx) error {
+func (h *taskHandler) Show(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
 	}
 
-	task, err := h.TaskUsecase.GetByID(c.Context(), uint(id))
+	task, err := h.usecase.GetByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(dto.ToTaskResponse(task))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"payload": fiber.Map{
+			"message": "Success get task",
+			"task":    task,
+		},
+	})
 }
 
-func (h *TaskHandler) Update(c *fiber.Ctx) error {
+func (h *taskHandler) Update(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -120,26 +127,32 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
 	}
 
-	if err := h.Validate.Struct(req); err != nil {
+	if err := h.validator.Struct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	updated, err := h.TaskUsecase.Update(c.Context(), uint(id), req)
+	updated, err := h.usecase.Update(uint(id), req)
 	if err != nil {
+		// you can distinguish not-found vs other errors in usecase if you implement custom errors
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "unable to update"})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(dto.ToTaskResponse(updated))
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"payload": fiber.Map{
+			"message": "Success update task",
+			"task":    updated,
+		},
+	})
 }
 
-func (h *TaskHandler) Delete(c *fiber.Ctx) error {
+func (h *taskHandler) Delete(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid id"})
 	}
 
-	if err := h.TaskUsecase.Delete(c.Context(), uint(id)); err != nil {
+	if err := h.usecase.Delete(uint(id)); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "task not found"})
 	}
 
