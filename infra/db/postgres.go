@@ -8,8 +8,6 @@ import (
 	"github.com/Candrandika/be-todo-app-hmdtif/domain/entity"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"context"
-	"errors"
 )
 
 func NewPostgresDatabase(env *config.Env) *gorm.DB {
@@ -37,55 +35,4 @@ func Migrate(db *gorm.DB) {
 		log.Fatalf("Failed to auto migrate database: %v", err)
 	}
 	log.Println("Database migration completed")
-}
-type taskRepository struct {
-	db *gorm.DB
-}
-
-func NewTaskRepository(db *gorm.DB) *taskRepository {
-	return &taskRepository{db: db}
-}
-
-func (r *taskRepository) Create(t entity.Task) (entity.Task, error) {
-	if err := r.db.Create(&t).Error; err != nil {
-		return entity.Task{}, err
-	}
-	return t, nil
-}
-
-func (r *taskRepository) GetAll() ([]entity.Task, error) {
-	var tasks []entity.Task
-	if err := r.db.Find(&tasks).Error; err != nil {
-		return nil, err
-	}
-	return tasks, nil
-}
-
-func (r *taskRepository) GetByID(id uint) (entity.Task, error) {
-	var t entity.Task
-	if err := r.db.First(&t, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Task{}, err
-		}
-		return entity.Task{}, err
-	}
-	return t, nil
-}
-
-func (r *taskRepository) Update(t entity.Task) (entity.Task, error) {
-	if err := r.db.Save(&t).Error; err != nil {
-		return entity.Task{}, err
-	}
-	return t, nil
-}
-
-func (r *taskRepository) Delete(id uint) error {
-	res := r.db.Delete(&entity.Task{}, id)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
 }

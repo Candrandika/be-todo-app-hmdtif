@@ -34,9 +34,9 @@ func (u *taskUsecase) CreateNewTask(req dto.CreateTaskRequest) (entity.Task, err
 	t := entity.Task{
 		Title:       req.Title,
 		Description: req.Description,
-		Done:        false,
+		IsDone:      false,
 	}
-	return u.repo.Create(t)
+	return u.repo.Create(&t)
 }
 
 func (u *taskUsecase) GetByID(id uint) (entity.Task, error) {
@@ -54,7 +54,7 @@ func (u *taskUsecase) Update(id uint, req dto.TaskUpdateRequest) (entity.Task, e
 	}
 	t.Title = req.Title
 	t.Description = req.Description
-	t.Done = req.Done
+	t.IsDone = req.Done
 	updated, err := u.repo.Update(t)
 	if err != nil {
 		return entity.Task{}, err
